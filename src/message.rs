@@ -7,6 +7,14 @@ pub struct Message {
     pub(crate) inner: RustMessage,
 }
 
+impl Clone for Message {
+    fn clone(&self) -> Self {
+        Message {
+            inner: RustMessage::from_str(&self.inner.to_string()).unwrap(),
+        }
+    }
+}
+
 #[pymethods]
 impl Message {
     #[new]

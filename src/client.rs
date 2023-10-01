@@ -1,5 +1,4 @@
 use crate::message::Message;
-use iggy::binary::messages;
 use iggy::client::TopicClient;
 use iggy::client::{Client, MessageClient, StreamClient};
 use iggy::clients::client::IggyClient as RustIggyClient;
@@ -8,6 +7,7 @@ use iggy::messages::send_messages::{Message as RustMessage, Partitioning, SendMe
 use iggy::streams::create_stream::CreateStream;
 use iggy::topics::create_topic::CreateTopic;
 use pyo3::prelude::*;
+use pyo3::types::PyList;
 use tokio::runtime::{Builder, Runtime};
 
 #[pyclass]
@@ -39,7 +39,8 @@ impl IggyClient {
     }
 
     fn create_stream(&self, stream_id: u32, name: String) -> PyResult<()> {
-        let create_stream_future = self.inner.create_stream(&CreateStream { stream_id, name });
+        let create_stream = CreateStream { stream_id, name };
+        let create_stream_future = self.inner.create_stream(&create_stream);
         let create_stream = self
             .runtime
             .block_on(async move { create_stream_future.await });
@@ -53,36 +54,44 @@ impl IggyClient {
         partitions_count: u32,
         name: String,
     ) -> PyResult<()> {
-        let create_topic_future = self.inner.create_topic(&CreateTopic {
+        let create_topic = CreateTopic {
             stream_id: Identifier::numeric(stream_id).unwrap(),
             topic_id,
             name,
             partitions_count,
             message_expiry: None,
-        });
+        };
+        let create_topic_future = self.inner.create_topic(&create_topic);
         let create_topic = self
             .runtime
             .block_on(async move { create_topic_future.await });
         PyResult::Ok(())
     }
 
-    fn send_message(
+    fn send_messages(
         &self,
         stream_id: u32,
         topic_id: u32,
-        partition_id: u32,
-        messages: Vec<Message>,
+        partitioning: u32,
+        messages: &PyList,
     ) -> PyResult<()> {
-        let messages = messages
+        let messages: Vec<Message> = messages
+            .iter()
+            .map(|item| item.extract::<Message>())
+            .collect::<Result<Vec<_>, _>>()?;
+        let messages: Vec<RustMessage> = messages
             .into_iter()
             .map(|message| message.inner)
-            .collect::<Vec<RustMessage>>();
-        let send_message_future = self.inner.send_messages(&mut SendMessages {
+            .collect::<Vec<_>>();
+
+        let mut messages = SendMessages {
             stream_id: Identifier::numeric(stream_id).unwrap(),
             topic_id: Identifier::numeric(topic_id).unwrap(),
-            partitioning: Partitioning::partition_id(partition_id),
+            partitioning: Partitioning::partition_id(partitioning),
             messages,
-        });
+        };
+
+        let send_message_future = self.inner.send_messages(&mut messages);
         let send_message = self
             .runtime
             .block_on(async move { send_message_future.await });
