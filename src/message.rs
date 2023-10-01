@@ -1,5 +1,5 @@
 use iggy::messages::send_messages::Message as RustMessage;
-use pyo3::{prelude::*, types::PyString};
+use pyo3::prelude::*;
 use std::str::FromStr;
 
 #[pyclass]
@@ -9,15 +9,9 @@ pub struct Message {
 
 #[pymethods]
 impl Message {
-    fn from_str(data: String) -> Self {
+    #[new]
+    fn new(data: String) -> Self {
         let inner = RustMessage::from_str(&data).unwrap();
         Message { inner }
-    }
-}
-
-impl<'source> FromPyObject<'source> for Message {
-    fn extract(obj: &'source PyAny) -> PyResult<Self> {
-        let inner: RustMessage = obj.getattr("inner")?.downcast_unchecked();
-        Ok(Message { inner })
     }
 }
