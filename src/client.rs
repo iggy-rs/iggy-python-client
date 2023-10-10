@@ -34,9 +34,10 @@ impl IggyClient {
 
     fn connect(&mut self) -> PyResult<()> {
         let connect_future = self.inner.connect();
-        let _connect = self.runtime.block_on(async move { connect_future.await }).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))  
-        })?;
+        let _connect = self
+            .runtime
+            .block_on(async move { connect_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         PyResult::Ok(())
     }
 
@@ -45,9 +46,8 @@ impl IggyClient {
         let create_stream_future = self.inner.create_stream(&create_stream);
         let _create_stream = self
             .runtime
-            .block_on(async move { create_stream_future.await }).map_err(|e| {
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
-            })?;
+            .block_on(async move { create_stream_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         PyResult::Ok(())
     }
 
@@ -59,7 +59,9 @@ impl IggyClient {
         name: String,
     ) -> PyResult<()> {
         let create_topic = CreateTopic {
-            stream_id: Identifier::numeric(stream_id).unwrap(),
+            stream_id: Identifier::numeric(stream_id).map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?,
             topic_id,
             name,
             partitions_count,
@@ -68,9 +70,8 @@ impl IggyClient {
         let create_topic_future = self.inner.create_topic(&create_topic);
         let _create_topic = self
             .runtime
-            .block_on(async move { create_topic_future.await }).map_err(|e| {
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
-            })?;
+            .block_on(async move { create_topic_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         PyResult::Ok(())
     }
 
