@@ -805,11 +805,12 @@ dependencies = [
 
 [[package]]
 name = "iggy"
-version = "0.0.84"
+version = "0.0.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16e7cad87bc487d1723d8cc26374dadaa589c039ba3f017a6f75781146507266"
+checksum = "9c0285b70068dcf5e29e7904ba9362d6342b31da02b4adbcee17dbf69c9efe43"
 dependencies = [
  "aes-gcm",
+ "anyhow",
  "async-trait",
  "base64",
  "bytes",

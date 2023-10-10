@@ -92,9 +92,9 @@ impl IggyClient {
         };
 
         let send_message_future = self.inner.send_messages(&mut messages);
-        let send_message = self
-            .runtime
-            .block_on(async move { send_message_future.await });
+        self.runtime
+            .block_on(async move { send_message_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         PyResult::Ok(())
     }
 }
