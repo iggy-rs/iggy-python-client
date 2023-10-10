@@ -34,16 +34,20 @@ impl IggyClient {
 
     fn connect(&mut self) -> PyResult<()> {
         let connect_future = self.inner.connect();
-        let connect = self.runtime.block_on(async move { connect_future.await });
+        let _connect = self.runtime.block_on(async move { connect_future.await }).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))  
+        })?;
         PyResult::Ok(())
     }
 
     fn create_stream(&self, stream_id: u32, name: String) -> PyResult<()> {
         let create_stream = CreateStream { stream_id, name };
         let create_stream_future = self.inner.create_stream(&create_stream);
-        let create_stream = self
+        let _create_stream = self
             .runtime
-            .block_on(async move { create_stream_future.await });
+            .block_on(async move { create_stream_future.await }).map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
         PyResult::Ok(())
     }
 
@@ -62,9 +66,11 @@ impl IggyClient {
             message_expiry: None,
         };
         let create_topic_future = self.inner.create_topic(&create_topic);
-        let create_topic = self
+        let _create_topic = self
             .runtime
-            .block_on(async move { create_topic_future.await });
+            .block_on(async move { create_topic_future.await }).map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
         PyResult::Ok(())
     }
 
