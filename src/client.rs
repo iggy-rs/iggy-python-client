@@ -1,8 +1,12 @@
-use crate::message::Message;
+use crate::consumer::Consumer;
+use crate::receive_message::ReceiveMessage;
+use crate::send_message::SendMessage;
 use iggy::client::TopicClient;
 use iggy::client::{Client, MessageClient, StreamClient};
 use iggy::clients::client::IggyClient as RustIggyClient;
+use iggy::consumer::{Consumer as RustConsumer, ConsumerKind};
 use iggy::identifier::Identifier;
+use iggy::messages::poll_messages::{PollMessages, PollingKind, PollingStrategy};
 use iggy::messages::send_messages::{Message as RustMessage, Partitioning, SendMessages};
 use iggy::streams::create_stream::CreateStream;
 use iggy::topics::create_topic::CreateTopic;
@@ -82,9 +86,9 @@ impl IggyClient {
         partitioning: u32,
         messages: &PyList,
     ) -> PyResult<()> {
-        let messages: Vec<Message> = messages
+        let messages: Vec<SendMessage> = messages
             .iter()
-            .map(|item| item.extract::<Message>())
+            .map(|item| item.extract::<SendMessage>())
             .collect::<Result<Vec<_>, _>>()?;
         let messages: Vec<RustMessage> = messages
             .into_iter()
@@ -103,5 +107,42 @@ impl IggyClient {
             .block_on(async move { send_message_future.await })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         PyResult::Ok(())
+    }
+
+    fn poll_messages(
+        &self,
+        consumer_id: u32,
+        consumer_kind: u8,
+        stream_id: u32,
+        topic_id: u32,
+        partition_id: u32,
+        count: u32,
+        auto_commit: bool,
+    ) -> PyResult<Vec<ReceiveMessage>> {
+        let poll_message_cmd = PollMessages {
+            consumer: RustConsumer {
+                kind: ConsumerKind::from_code(consumer_kind).unwrap(),
+                id: Identifier::numeric(consumer_id).unwrap(),
+            },
+            stream_id: Identifier::numeric(stream_id).unwrap(),
+            topic_id: Identifier::numeric(topic_id).unwrap(),
+            partition_id: Some(partition_id),
+            strategy: PollingStrategy::next(),
+            count,
+            auto_commit,
+        };
+        let poll_messages = self.inner.poll_messages(&poll_message_cmd);
+
+        let polled_messages = self
+            .runtime
+            .block_on(async move { poll_messages.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
+
+        let messages = polled_messages
+            .messages
+            .into_iter()
+            .map(|message| ReceiveMessage::from_rust_message(message))
+            .collect::<Vec<_>>();
+        PyResult::Ok(messages)
     }
 }
