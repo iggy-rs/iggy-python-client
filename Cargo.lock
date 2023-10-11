@@ -846,6 +846,7 @@ dependencies = [
 name = "iggy-py"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "iggy",
  "pyo3",
  "tokio",

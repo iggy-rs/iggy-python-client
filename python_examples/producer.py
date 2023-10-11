@@ -1,7 +1,7 @@
 import asyncio
 
 # Assuming we have a Python module for iggy with similar functionality as the Rust one.
-from iggy_py import IggyClient, Message
+from iggy_py import IggyClient, SendMessage as Message
 
 STREAM_ID = 1
 TOPIC_ID = 1
@@ -44,13 +44,16 @@ async def produce_messages(client: IggyClient):
             payload = f"message-{current_id}"
             message = Message(payload)  # Assuming a method exists to convert str to Message.
             messages.append(message)
+        try:
+            client.send_messages(
+                stream_id=STREAM_ID,
+                topic_id=TOPIC_ID,
+                partitioning=PARTITION_ID,
+                messages=messages
+            )
+        except Exception as e:
+            print("exception: {}", e)
         
-        client.send_messages(
-            stream_id=STREAM_ID,
-            topic_id=TOPIC_ID,
-            partitioning=PARTITION_ID,
-            messages=messages
-        )
         print(f"Sent {messages_per_batch} message(s).")
         await asyncio.sleep(interval)
 

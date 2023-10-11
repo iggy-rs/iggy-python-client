@@ -111,8 +111,6 @@ impl IggyClient {
 
     fn poll_messages(
         &self,
-        consumer_id: u32,
-        consumer_kind: u8,
         stream_id: u32,
         topic_id: u32,
         partition_id: u32,
@@ -120,10 +118,7 @@ impl IggyClient {
         auto_commit: bool,
     ) -> PyResult<Vec<ReceiveMessage>> {
         let poll_message_cmd = PollMessages {
-            consumer: RustConsumer {
-                kind: ConsumerKind::from_code(consumer_kind).unwrap(),
-                id: Identifier::numeric(consumer_id).unwrap(),
-            },
+            consumer: RustConsumer::default(),
             stream_id: Identifier::numeric(stream_id).unwrap(),
             topic_id: Identifier::numeric(topic_id).unwrap(),
             partition_id: Some(partition_id),
