@@ -11,15 +11,6 @@ pub struct SendMessage {
     pub(crate) inner: RustSendMessage,
 }
 
-impl SendMessage {
-    /// Converts a Rust send message into its corresponding Python representation.
-    ///
-    /// This is an internal utility function, not exposed to Python.
-    pub(crate) fn from_rust_message(message: RustSendMessage) -> Self {
-        Self { inner: message }
-    }
-}
-
 /// Provides the capability to clone a SendMessage.
 ///
 /// This implementation creates a new `RustSendMessage` instance from
@@ -40,6 +31,7 @@ impl SendMessage {
     /// directly from Python using the provided string data.
     #[new]
     pub fn new(data: String) -> Self {
+        // TODO: handle errors
         let inner = RustSendMessage::from_str(&data).unwrap();
         Self { inner }
     }
