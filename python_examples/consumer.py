@@ -23,7 +23,7 @@ async def consume_messages(client: IggyClient):
     messages_per_batch = 10
     while True:
         try:
-            polled_messages = await client.poll_messages(
+            polled_messages = client.poll_messages(
                 stream_id=STREAM_ID,
                 topic_id=TOPIC_ID,
                 partition_id=PARTITION_ID,
@@ -44,9 +44,8 @@ async def consume_messages(client: IggyClient):
             break 
 
 def handle_message(message: ReceiveMessage):
-    # Assuming message.payload is of type bytes in Python.
     payload = message.payload().decode('utf-8')
-    print(f"Handling message at offset: {message.offset}, payload: {payload}...")
+    print(f"Handling message at offset: {message.offset()}, payload: {payload}...")
 
 if __name__ == "__main__":
     asyncio.run(main())

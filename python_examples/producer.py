@@ -17,8 +17,8 @@ def init_system(client: IggyClient):
     try:
         client.create_stream(stream_id=STREAM_ID, name="sample-stream")
         print("Stream was created.")
-    except Exception:
-        print("Stream already exists and was not recreated.")
+    except Exception as e:
+        print("stream error {}", e)
     
     try:
         client.create_topic(
@@ -28,9 +28,8 @@ def init_system(client: IggyClient):
             name="sample-topic"
         )
         print("Topic was created.")
-    except Exception:
-        print("Topic already exists and was not recreated.")
-
+    except Exception as e:
+        print("topic error {}", e)
 async def produce_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
     print(f"Messages will be sent to stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
