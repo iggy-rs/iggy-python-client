@@ -3,7 +3,7 @@ use crate::send_message::SendMessage;
 use iggy::client::TopicClient;
 use iggy::client::{Client, MessageClient, StreamClient};
 use iggy::clients::client::IggyClient as RustIggyClient;
-use iggy::consumer::{Consumer as RustConsumer};
+use iggy::consumer::Consumer as RustConsumer;
 use iggy::identifier::Identifier;
 use iggy::messages::poll_messages::{PollMessages, PollingStrategy};
 use iggy::messages::send_messages::{Message as RustMessage, Partitioning, SendMessages};
@@ -13,6 +13,9 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use tokio::runtime::{Builder, Runtime};
 
+/// A Python class representing the Iggy client.
+/// It wraps the RustIggyClient and provides asynchronous functionality
+/// through the contained runtime.
 #[pyclass]
 pub struct IggyClient {
     inner: RustIggyClient,
@@ -21,6 +24,10 @@ pub struct IggyClient {
 
 #[pymethods]
 impl IggyClient {
+    /// Constructs a new IggyClient.
+    ///
+    /// This initializes a new runtime for asynchronous operations.
+    /// Future versions might utilize asyncio for more Pythonic async.
     #[new]
     fn new() -> Self {
         // TODO: use asyncio
@@ -35,6 +42,9 @@ impl IggyClient {
         }
     }
 
+    /// Connects the IggyClient to its service.
+    ///
+    /// Returns Ok(()) on successful connection or a PyRuntimeError on failure.
     fn connect(&mut self) -> PyResult<()> {
         let connect_future = self.inner.connect();
         let _connect = self
@@ -44,6 +54,9 @@ impl IggyClient {
         PyResult::Ok(())
     }
 
+    /// Creates a new stream with the provided ID and name.
+    ///
+    /// Returns Ok(()) on successful stream creation or a PyRuntimeError on failure.
     fn create_stream(&self, stream_id: u32, name: String) -> PyResult<()> {
         let create_stream = CreateStream { stream_id, name };
         let create_stream_future = self.inner.create_stream(&create_stream);
@@ -54,6 +67,9 @@ impl IggyClient {
         PyResult::Ok(())
     }
 
+    /// Creates a new topic with the given parameters.
+    ///
+    /// Returns Ok(()) on successful topic creation or a PyRuntimeError on failure.
     fn create_topic(
         &self,
         stream_id: u32,
@@ -78,10 +94,14 @@ impl IggyClient {
         PyResult::Ok(())
     }
 
+    /// Sends a list of messages to the specified topic.
+    ///
+    /// Returns Ok(()) on successful sending or a PyRuntimeError on failure.
     fn send_messages(
         &self,
         stream_id: u32,
         topic_id: u32,
+
         partitioning: u32,
         messages: &PyList,
     ) -> PyResult<()> {
@@ -108,6 +128,9 @@ impl IggyClient {
         PyResult::Ok(())
     }
 
+    /// Polls for messages from the specified topic and partition.
+    ///
+    /// Returns a list of received messages or a PyRuntimeError on failure.
     fn poll_messages(
         &self,
         stream_id: u32,
