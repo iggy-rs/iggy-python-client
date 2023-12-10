@@ -53,7 +53,6 @@ impl IggyClient {
         self.runtime
             .block_on(async move { login_future.await })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-
         PyResult::Ok(())
     }
 
