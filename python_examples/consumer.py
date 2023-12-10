@@ -11,6 +11,7 @@ async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
     try:
         client.connect()
+        client.login_user("iggy", "iggy")
         await consume_messages(client)
     except Exception as e:
         print("exception: {}", e)

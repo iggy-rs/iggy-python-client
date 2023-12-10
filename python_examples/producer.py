@@ -10,6 +10,7 @@ PARTITION_ID = 1
 async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
     client.connect()
+    client.login_user("iggy", "iggy")
     init_system(client)
     await produce_messages(client)
 
