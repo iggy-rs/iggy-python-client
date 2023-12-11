@@ -1,7 +1,7 @@
 use crate::receive_message::ReceiveMessage;
 use crate::send_message::SendMessage;
 use iggy::client::TopicClient;
-use iggy::client::{Client, MessageClient, StreamClient};
+use iggy::client::{Client, MessageClient, StreamClient, UserClient};
 use iggy::clients::client::IggyClient as RustIggyClient;
 use iggy::consumer::Consumer as RustConsumer;
 use iggy::identifier::Identifier;
@@ -9,6 +9,7 @@ use iggy::messages::poll_messages::{PollMessages, PollingStrategy};
 use iggy::messages::send_messages::{Message as RustMessage, Partitioning, SendMessages};
 use iggy::streams::create_stream::CreateStream;
 use iggy::topics::create_topic::CreateTopic;
+use iggy::users::login_user::LoginUser;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use tokio::runtime::{Builder, Runtime};
@@ -40,6 +41,19 @@ impl IggyClient {
             inner: RustIggyClient::default(),
             runtime,
         }
+    }
+
+    /// Logs in the user with the given credentials.
+    /// 
+    /// Returns `Ok(())` on success, or a PyRuntimeError on failure.
+    fn login_user(&self, username: String, password: String) -> PyResult<()> {
+        let login_command = LoginUser { username, password };
+
+        let login_future = self.inner.login_user(&login_command);
+        self.runtime
+            .block_on(async move { login_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
+        PyResult::Ok(())
     }
 
     /// Connects the IggyClient to its service.
