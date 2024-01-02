@@ -1,4 +1,6 @@
 mod client;
+mod consumer;
+mod identifier;
 mod receive_message;
 mod send_message;
 
@@ -13,5 +15,7 @@ fn iggy_py(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<SendMessage>()?;
     m.add_class::<ReceiveMessage>()?;
     m.add_class::<IggyClient>()?;
+    m.add_class::<consumer::Consumer>()?;
+    m.add_class::<identifier::Identifier>()?;
     Ok(())
 }
