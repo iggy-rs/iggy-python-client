@@ -15,7 +15,14 @@ docker run --rm -p 8080:8080 -p 3000:3000 -p 8090:8090 iggyrs/iggy:0.1.0
 
 This command runs the server and maps the specified ports to your local machine.
 
-### 2. Install Maturin:
+### 2. Install loguru:
+Loguru is advanced library used for logging information about procceses. Install it with:
+
+```
+pip install loguru
+```
+
+### 3. Install Maturin:
 
 Maturin is used for building Rust binaries for Python. Install it with:
 
@@ -23,7 +30,7 @@ Maturin is used for building Rust binaries for Python. Install it with:
 pip install maturin
 ```
 
-### 3. Build and Install the pyo3 Library:
+### 4. Build and Install the pyo3 Library:
 
 Navigate to your library's root directory and execute:
 
@@ -34,7 +41,7 @@ maturin develop
 
 This will build the Rust library and make it available for Python.
 
-### 4. Start the Producer:
+### 5. Start the Producer:
 
 Navigate to the `python_examples` directory and run:
 
@@ -42,7 +49,7 @@ Navigate to the `python_examples` directory and run:
 python producer.py
 ```
 
-### 5. Start the Consumer:
+### 6. Start the Consumer:
 
 Still in the `python_examples` directory, run:
 
