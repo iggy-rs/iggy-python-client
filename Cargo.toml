@@ -1,6 +1,6 @@
 [package]
 name = "iggy-py"
-version = "0.4.2"
+version = "0.2.0"
 edition = "2021"
 authors = ["Dario Lencina Talarico <darioalessandrolencina@gmail.com>"]
 
