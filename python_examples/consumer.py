@@ -7,6 +7,7 @@ STREAM_ID = 1
 TOPIC_ID = 1
 PARTITION_ID = 1
 
+
 async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
     try:
@@ -16,10 +17,11 @@ async def main():
     except Exception as e:
         print("exception: {}", e)
 
+
 async def consume_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
     print(f"Messages will be consumed from stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
-    
+
     offset = 0
     messages_per_batch = 10
     while True:
@@ -30,23 +32,25 @@ async def consume_messages(client: IggyClient):
                 partition_id=PARTITION_ID,
                 count=messages_per_batch,
                 auto_commit=False
-            )    
+            )
             if not polled_messages:
                 print("No messages found.")
                 await asyncio.sleep(interval)
                 continue
-            
+
             offset += len(polled_messages)
             for message in polled_messages:
                 handle_message(message)
             await asyncio.sleep(interval)
         except Exception as e:
             print("exception: {}", e)
-            break 
+            break
+
 
 def handle_message(message: ReceiveMessage):
     payload = message.payload().decode('utf-8')
     print(f"Handling message at offset: {message.offset()}, payload: {payload}...")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

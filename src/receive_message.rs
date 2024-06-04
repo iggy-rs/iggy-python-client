@@ -1,4 +1,4 @@
-use iggy::models::messages::Message as RustReceiveMessage;
+use iggy::models::messages::PolledMessage as RustReceiveMessage;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
@@ -25,7 +25,7 @@ impl ReceiveMessage {
     ///
     /// The payload is returned as a Python bytes object.
     pub fn payload(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.inner.payload.to_vec()).into()
+        PyBytes::new_bound(py, &self.inner.payload.to_vec()).into()
     }
 
     /// Retrieves the offset of the received message.

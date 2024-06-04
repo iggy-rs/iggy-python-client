@@ -80,6 +80,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
+          manylinux: '2_28'
           args: --release --out dist --find-interpreter
           sccache: 'true'
       - name: Upload wheels
