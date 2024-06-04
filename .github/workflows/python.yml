@@ -35,6 +35,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
+          before-script-linux: 'python3 -m pip --version || python3 -m ensurepip'
           manylinux: '2_28'
           args: --release --out dist --find-interpreter
           sccache: 'true'
