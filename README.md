@@ -9,7 +9,7 @@ This repository provides a Python library powered by Rust using `pyo3`. It also 
 Ensure you have Docker installed on your system. Then, execute the following command:
 
 ```
-docker run --rm -p 8080:8080 -p 3000:3000 -p 8090:8090 iggyrs/iggy:0.1.0
+docker run --rm -p 8080:8080 -p 3000:3000 -p 8090:8090 iggyrs/iggy:0.2.23
 ```
 
 
