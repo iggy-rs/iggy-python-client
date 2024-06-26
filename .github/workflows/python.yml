@@ -56,6 +56,8 @@ jobs:
         with:
           python-version: '3.10'
           architecture: ${{ matrix.target }}
+      - name: Set up NASM
+        uses: ilammy/setup-nasm@v1
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
