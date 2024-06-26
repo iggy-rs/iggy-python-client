@@ -10,9 +10,8 @@ name = "iggy_py"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.21.2"
-iggy = "0.4.2"
+pyo3 = "0.22.0"
+iggy = "0.4.3"
 tokio = { version = "1", features = ["full"] }
 bytes = "1.5"
 openssl = { version = "0.10.*", features = ["vendored"] }
-
