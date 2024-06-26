@@ -3,8 +3,8 @@ import asyncio
 # Assuming there's a Python module for iggy with similar functionalities.
 from iggy_py import IggyClient, ReceiveMessage
 
-STREAM_ID = 1
-TOPIC_ID = 1
+STREAM_NAME = "sample-stream"
+TOPIC_NAME = "sample-topic"
 PARTITION_ID = 1
 
 
@@ -20,15 +20,15 @@ async def main():
 
 async def consume_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    print(f"Messages will be consumed from stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
+    print(f"Messages will be consumed from stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
 
     offset = 0
     messages_per_batch = 10
     while True:
         try:
             polled_messages = client.poll_messages(
-                stream_id=STREAM_ID,
-                topic_id=TOPIC_ID,
+                stream_id=STREAM_NAME,
+                topic_id=TOPIC_NAME,
                 partition_id=PARTITION_ID,
                 count=messages_per_batch,
                 auto_commit=False
