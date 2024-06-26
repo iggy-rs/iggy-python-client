@@ -27,7 +27,7 @@ def init_system(client: IggyClient):
         client.create_topic(
             stream_id=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
             partitions_count=1,
-            name=STREAM_NAME,
+            name=TOPIC_NAME,
             compression_algorithm="none",
         )
         print("Topic was created.")
