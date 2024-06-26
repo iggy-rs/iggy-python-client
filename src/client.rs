@@ -83,6 +83,9 @@ impl IggyClient {
     /// Creates a new topic with the given parameters.
     ///
     /// Returns Ok(()) on successful topic creation or a PyRuntimeError on failure.
+    #[pyo3(
+        signature = (stream_id, topic_id, partitions_count, name, compression_algorithm, replication_factor = None)
+    )]
     fn create_topic(
         &self,
         stream_id: u32,
