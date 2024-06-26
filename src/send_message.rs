@@ -18,7 +18,7 @@ pub struct SendMessage {
 impl Clone for SendMessage {
     fn clone(&self) -> Self {
         Self {
-            inner: RustSendMessage::from_str(&self.inner.to_string()).unwrap(),
+            inner: self.inner.clone(),
         }
     }
 }
