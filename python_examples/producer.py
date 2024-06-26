@@ -3,8 +3,8 @@ import asyncio
 # Assuming we have a Python module for iggy with similar functionality as the Rust one.
 from iggy_py import IggyClient, SendMessage as Message
 
-STREAM_ID = 1
-TOPIC_ID = 1
+STREAM_NAME = "sample-stream"
+TOPIC_NAME = "sample-topic"
 PARTITION_ID = 1
 
 
@@ -18,17 +18,16 @@ async def main():
 
 def init_system(client: IggyClient):
     try:
-        client.create_stream(stream_id=STREAM_ID, name="sample-stream")
+        client.create_stream(name=STREAM_NAME)
         print("Stream was created.")
     except Exception as e:
         print("stream error {}", e)
 
     try:
         client.create_topic(
-            stream_id=STREAM_ID,  # Assuming a method exists to create a numeric Identifier.
-            topic_id=TOPIC_ID,
+            stream_id=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
             partitions_count=1,
-            name="sample-topic",
+            name=STREAM_NAME,
             compression_algorithm="none",
         )
         print("Topic was created.")
@@ -38,7 +37,7 @@ def init_system(client: IggyClient):
 
 async def produce_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    print(f"Messages will be sent to stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
+    print(f"Messages will be sent to stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
     
     current_id = 0
     messages_per_batch = 10
@@ -51,8 +50,8 @@ async def produce_messages(client: IggyClient):
             messages.append(message)
         try:
             client.send_messages(
-                stream_id=STREAM_ID,
-                topic_id=TOPIC_ID,
+                stream_id=STREAM_NAME,
+                topic_id=TOPIC_NAME,
                 partitioning=PARTITION_ID,
                 messages=messages
             )

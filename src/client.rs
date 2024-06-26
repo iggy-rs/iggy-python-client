@@ -25,6 +25,23 @@ pub struct IggyClient {
     runtime: Runtime,
 }
 
+#[derive(FromPyObject)]
+enum PyIdentifier {
+    #[pyo3(transparent, annotation = "str")]
+    String(String),
+    #[pyo3(transparent, annotation = "int")]
+    Int(u32),
+}
+
+impl From<PyIdentifier> for Identifier {
+    fn from(py_identifier: PyIdentifier) -> Self {
+        match py_identifier {
+            PyIdentifier::String(s) => Identifier::from_str(&s).unwrap(),
+            PyIdentifier::Int(i) => Identifier::numeric(i).unwrap(),
+        }
+    }
+}
+
 #[pymethods]
 impl IggyClient {
     /// Constructs a new IggyClient.
@@ -71,8 +88,9 @@ impl IggyClient {
     /// Creates a new stream with the provided ID and name.
     ///
     /// Returns Ok(()) on successful stream creation or a PyRuntimeError on failure.
-    fn create_stream(&self, stream_id: u32, name: String) -> PyResult<()> {
-        let create_stream_future = self.inner.create_stream(&name, Some(stream_id));
+    #[pyo3(signature = (name, stream_id = None))]
+    fn create_stream(&self, name: String, stream_id: Option<u32>) -> PyResult<()> {
+        let create_stream_future = self.inner.create_stream(&name, stream_id);
         let _create_stream = self
             .runtime
             .block_on(async move { create_stream_future.await })
@@ -83,17 +101,19 @@ impl IggyClient {
     /// Creates a new topic with the given parameters.
     ///
     /// Returns Ok(()) on successful topic creation or a PyRuntimeError on failure.
+    #[pyo3(
+        signature = (stream_id, name, partitions_count, compression_algorithm, topic_id = None, replication_factor = None)
+    )]
     fn create_topic(
         &self,
-        stream_id: u32,
-        topic_id: u32,
-        partitions_count: u32,
+        stream_id: PyIdentifier,
         name: String,
+        partitions_count: u32,
         compression_algorithm: String,
+        topic_id: Option<u32>,
         replication_factor: Option<u8>,
     ) -> PyResult<()> {
-        let stream_id = Identifier::numeric(stream_id)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
+        let stream_id = Identifier::from(stream_id);
         let compression_algorithm = CompressionAlgorithm::from_str(&compression_algorithm)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
 
@@ -103,7 +123,7 @@ impl IggyClient {
             partitions_count,
             compression_algorithm,
             replication_factor,
-            Some(topic_id),
+            topic_id,
             IggyExpiry::NeverExpire,
             None,
         );
@@ -119,8 +139,8 @@ impl IggyClient {
     /// Returns Ok(()) on successful sending or a PyRuntimeError on failure.
     fn send_messages(
         &self,
-        stream_id: u32,
-        topic_id: u32,
+        stream_id: PyIdentifier,
+        topic_id: PyIdentifier,
         partitioning: u32,
         messages: &Bound<'_, PyList>,
     ) -> PyResult<()> {
@@ -133,8 +153,8 @@ impl IggyClient {
             .map(|message| message.inner)
             .collect::<Vec<_>>();
 
-        let stream_id = Identifier::numeric(stream_id).unwrap();
-        let topic_id = Identifier::numeric(topic_id).unwrap();
+        let stream_id = Identifier::from(stream_id);
+        let topic_id = Identifier::from(topic_id);
         let partitioning = Partitioning::partition_id(partitioning);
 
         let send_message_future =
@@ -151,15 +171,15 @@ impl IggyClient {
     /// Returns a list of received messages or a PyRuntimeError on failure.
     fn poll_messages(
         &self,
-        stream_id: u32,
-        topic_id: u32,
+        stream_id: PyIdentifier,
+        topic_id: PyIdentifier,
         partition_id: u32,
         count: u32,
         auto_commit: bool,
     ) -> PyResult<Vec<ReceiveMessage>> {
         let consumer = RustConsumer::default();
-        let stream_id = Identifier::numeric(stream_id).unwrap();
-        let topic_id = Identifier::numeric(topic_id).unwrap();
+        let stream_id = Identifier::from(stream_id);
+        let topic_id = Identifier::from(topic_id);
         let strategy = PollingStrategy::next();
 
         let poll_messages = self.inner.poll_messages(
