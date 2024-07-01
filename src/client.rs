@@ -9,6 +9,7 @@ use iggy::identifier::Identifier;
 use iggy::messages::poll_messages::PollingStrategy;
 use iggy::messages::send_messages::{Message as RustMessage, Partitioning};
 use iggy::utils::expiry::IggyExpiry;
+use iggy::utils::topic_size::MaxTopicSize;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use tokio::runtime::{Builder, Runtime};
@@ -125,7 +126,7 @@ impl IggyClient {
             replication_factor,
             topic_id,
             IggyExpiry::NeverExpire,
-            None,
+            MaxTopicSize::ServerDefault,
         );
         let _create_topic = self
             .runtime
