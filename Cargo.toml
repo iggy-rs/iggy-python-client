@@ -1,6 +1,6 @@
 [package]
 name = "iggy-py"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 authors = ["Dario Lencina Talarico <darioalessandrolencina@gmail.com>"]
 
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.22.0"
-iggy = "0.5.0"
+iggy = "0.6.12"
 tokio = { version = "1", features = ["full"] }
-bytes = "1.5"
+bytes = "1.7.1"
 openssl = { version = "0.10.*", features = ["vendored"] }
