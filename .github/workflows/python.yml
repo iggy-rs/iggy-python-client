@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [x86_64, aarch64, armv7]
+        target: [x86_64, aarch64]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -35,6 +35,8 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
+          before-script-linux: 'dnf install -y perl-IPC-Cmd && (python3 -m pip --version || python3 -m ensurepip)'
+          manylinux: '2_28'
           args: --release --out dist --find-interpreter
           sccache: 'true'
       - name: Upload wheels
@@ -47,13 +49,15 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        target: [x64, x86]
+        target: [x64]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
           architecture: ${{ matrix.target }}
+      - name: Set up NASM
+        uses: ilammy/setup-nasm@v1
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:

@@ -4,8 +4,8 @@ from loguru import logger
 # Assuming there's a Python module for iggy with similar functionalities.
 from iggy_py import IggyClient, ReceiveMessage
 
-STREAM_ID = 1
-TOPIC_ID = 1
+STREAM_NAME = "sample-stream"
+TOPIC_NAME = "sample-topic"
 PARTITION_ID = 1
 
 
@@ -22,6 +22,7 @@ async def main():
         logger.exception("Exception occurred in main function: {}", error)
 
 
+
 async def consume_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
     logger.info(f"Messages will be consumed from stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with "
@@ -32,8 +33,8 @@ async def consume_messages(client: IggyClient):
         try:
             logger.debug("Polling for messages...")
             polled_messages = client.poll_messages(
-                stream_id=STREAM_ID,
-                topic_id=TOPIC_ID,
+                stream_id=STREAM_NAME,
+                topic_id=TOPIC_NAME,
                 partition_id=PARTITION_ID,
                 count=messages_per_batch,
                 auto_commit=False
@@ -55,6 +56,7 @@ async def consume_messages(client: IggyClient):
 def handle_message(message: ReceiveMessage):
     payload = message.payload().decode('utf-8')
     logger.info(f"Handling message at offset: {message.offset()} with payload: {payload}...")
+
 
 
 if __name__ == "__main__":

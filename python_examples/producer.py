@@ -4,9 +4,10 @@ from loguru import logger
 # Assuming we have a Python module for iggy with similar functionality as the Rust one.
 from iggy_py import IggyClient, SendMessage as Message
 
-STREAM_ID = 1
-TOPIC_ID = 1
+STREAM_NAME = "sample-stream"
+TOPIC_NAME = "sample-topic"
 PARTITION_ID = 1
+
 
 async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
@@ -17,6 +18,7 @@ async def main():
     logger.info("Logged in.")
     init_system(client)
     await produce_messages(client)
+
 
 def init_system(client: IggyClient):
     try:
@@ -30,8 +32,7 @@ def init_system(client: IggyClient):
     try:
         logger.info(f"Creating topic with ID {TOPIC_ID} in stream {STREAM_ID}")
         client.create_topic(
-            stream_id=STREAM_ID,  # Assuming a method exists to create a numeric Identifier.
-            topic_id=TOPIC_ID,
+            stream_id=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
             partitions_count=1,
             name="sample-topic",
             replication_factor=1
@@ -57,8 +58,8 @@ async def produce_messages(client: IggyClient):
         logger.info(f"Attempting to send batch of {messages_per_batch} messages. Batch ID: {current_id // messages_per_batch}")
         try:
             client.send_messages(
-                stream_id=STREAM_ID,
-                topic_id=TOPIC_ID,
+                stream_id=STREAM_NAME,
+                topic_id=TOPIC_NAME,
                 partitioning=PARTITION_ID,
                 messages=messages,
             )
@@ -68,6 +69,7 @@ async def produce_messages(client: IggyClient):
             logger.exception(error)
 
         await asyncio.sleep(interval)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
