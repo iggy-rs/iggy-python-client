@@ -1,4 +1,5 @@
 import asyncio
+from loguru import logger
 
 # Assuming we have a Python module for iggy with similar functionality as the Rust one.
 from iggy_py import IggyClient, SendMessage as Message
@@ -10,35 +11,41 @@ PARTITION_ID = 1
 
 async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
+    logger.info("Connecting to IggyClient")
     client.connect()
+    logger.info("Connected. Logging in user...")
     client.login_user("iggy", "iggy")
+    logger.info("Logged in.")
     init_system(client)
     await produce_messages(client)
 
 
 def init_system(client: IggyClient):
     try:
-        client.create_stream(name=STREAM_NAME)
-        print("Stream was created.")
-    except Exception as e:
-        print("stream error {}", e)
-
+        logger.info(f"Creating stream with ID {STREAM_ID}...")
+        client.create_stream(stream_id=STREAM_ID, name="sample-stream")
+        logger.info("Stream was created successfuly.")
+    except Exception as error:
+        logger.error(f"Error creating stream: {error}")
+        logger.exception(error)
+    
     try:
+        logger.info(f"Creating topic with ID {TOPIC_ID} in stream {STREAM_ID}")
         client.create_topic(
             stream_id=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
             partitions_count=1,
-            name=TOPIC_NAME,
-            compression_algorithm="none",
+            name="sample-topic",
+            replication_factor=1
         )
-        print("Topic was created.")
-    except Exception as e:
-        print("topic error {}", e)
+        logger.info(f"Topic: was created successfullly.")
+    except Exception as error:
+        logger.error(f"Error creating topic {error}")
+        logger.exception(error)
 
 
 async def produce_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    print(f"Messages will be sent to stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
-    
+    logger.info(f"Messages will be sent to stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
     current_id = 0
     messages_per_batch = 10
     while True:
@@ -48,17 +55,19 @@ async def produce_messages(client: IggyClient):
             payload = f"message-{current_id}"
             message = Message(payload)  # Assuming a method exists to convert str to Message.
             messages.append(message)
+        logger.info(f"Attempting to send batch of {messages_per_batch} messages. Batch ID: {current_id // messages_per_batch}")
         try:
             client.send_messages(
                 stream_id=STREAM_NAME,
                 topic_id=TOPIC_NAME,
                 partitioning=PARTITION_ID,
-                messages=messages
+                messages=messages,
             )
-        except Exception as e:
-            print("exception: {}", e)
+            logger.info(f"Succesffuly sent batch of {messages_per_batch} messages. Batch ID: {current_id // messages_per_batch}")
+        except Exception as error:
+            logger.error(f"Exception type: {type(error).__name__}, message: {error}")
+            logger.exception(error)
 
-        print(f"Sent {messages_per_batch} message(s).")
         await asyncio.sleep(interval)
 
 

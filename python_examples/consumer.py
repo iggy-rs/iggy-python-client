@@ -1,4 +1,5 @@
 import asyncio
+from loguru import logger
 
 # Assuming there's a Python module for iggy with similar functionalities.
 from iggy_py import IggyClient, ReceiveMessage
@@ -11,21 +12,26 @@ PARTITION_ID = 1
 async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
     try:
+        logger.info("Connecting to IggyClient...")
         client.connect()
+        logger.info("Connected. Logging in user...")
         client.login_user("iggy", "iggy")
+        logger.info("Logged in.")
         await consume_messages(client)
-    except Exception as e:
-        print("exception: {}", e)
+    except Exception as error:
+        logger.exception("Exception occurred in main function: {}", error)
+
 
 
 async def consume_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    print(f"Messages will be consumed from stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
-
+    logger.info(f"Messages will be consumed from stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with "
+                f"interval {interval * 1000} ms.")
     offset = 0
     messages_per_batch = 10
     while True:
         try:
+            logger.debug("Polling for messages...")
             polled_messages = client.poll_messages(
                 stream_id=STREAM_NAME,
                 topic_id=TOPIC_NAME,
@@ -34,7 +40,7 @@ async def consume_messages(client: IggyClient):
                 auto_commit=False
             )
             if not polled_messages:
-                print("No messages found.")
+                logger.warning("No messages found in current poll")
                 await asyncio.sleep(interval)
                 continue
 
@@ -42,14 +48,15 @@ async def consume_messages(client: IggyClient):
             for message in polled_messages:
                 handle_message(message)
             await asyncio.sleep(interval)
-        except Exception as e:
-            print("exception: {}", e)
+        except Exception as error:
+            logger.exception("Exception occurred while consuming messages: {}", error)
             break
 
 
 def handle_message(message: ReceiveMessage):
     payload = message.payload().decode('utf-8')
-    print(f"Handling message at offset: {message.offset()}, payload: {payload}...")
+    logger.info(f"Handling message at offset: {message.offset()} with payload: {payload}...")
+
 
 
 if __name__ == "__main__":
