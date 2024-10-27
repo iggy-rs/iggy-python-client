@@ -98,7 +98,7 @@ impl IggyClient {
     /// Returns Ok(()) on successful stream creation or a PyRuntimeError on failure.
     #[pyo3(signature = (name, stream_id = None))]
     fn create_stream(&self, name: String, stream_id: Option<u32>) -> PyResult<()> {
-        let create_stream_future = self.inner.create_stream(&name, stream_id);
+		let create_stream_future = self.inner.create_stream(&name, stream_id);
         let _create_stream = self
             .runtime
             .block_on(async move { create_stream_future.await })
@@ -110,11 +110,11 @@ impl IggyClient {
     ///
     /// Returns Ok(()) on successful topic creation or a PyRuntimeError on failure.
     #[pyo3(
-        signature = (stream_name, name, partitions_count, compression_algorithm = None, topic_id = None, replication_factor = None)
+        signature = (stream, name, partitions_count, compression_algorithm = None, topic_id = None, replication_factor = None)
     )]
     fn create_topic(
         &self,
-        stream: PyIdentifier,
+		stream: PyIdentifier,
         name: String,
         partitions_count: u32,
         compression_algorithm: Option<String>,
@@ -128,7 +128,7 @@ impl IggyClient {
 			None => CompressionAlgorithm::default()
 		};
 
-		let stream = stream.try_into().unwrap();
+		let stream = Identifier::from(stream);
         let create_topic_future = self.inner.create_topic(
             &stream,
             &name,
@@ -143,7 +143,6 @@ impl IggyClient {
             .runtime
             .block_on(async move { create_topic_future.await })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-			println!("Topic created with {:?}", _create_topic);
         PyResult::Ok(())
     }
 
@@ -166,11 +165,9 @@ impl IggyClient {
             .map(|message| message.inner)
             .collect::<Vec<_>>();
 
-        // let stream_id = Identifier::from(stream_id);
-        // let topic_id = Identifier::from(topic_id);
-		let stream = stream_id.try_into().unwrap();
-		let topic = topic_id.try_into().unwrap();
-        let partitioning = Partitioning::partition_id(partitioning);
+        let stream = Identifier::from(stream);
+        let topic = Identifier::from(topic);
+		let partitioning = Partitioning::partition_id(partitioning);
 
         let send_message_future =
             self.inner
@@ -186,20 +183,20 @@ impl IggyClient {
     /// Returns a list of received messages or a PyRuntimeError on failure.
     fn poll_messages(
         &self,
-        stream_id: PyIdentifier,
-        topic_id: PyIdentifier,
+        stream: PyIdentifier,
+        topic: PyIdentifier,
         partition_id: u32,
         count: u32,
         auto_commit: bool,
     ) -> PyResult<Vec<ReceiveMessage>> {
         let consumer = RustConsumer::default();
-        let stream_id = Identifier::from(stream_id);
-        let topic_id = Identifier::from(topic_id);
+        let stream = Identifier::from(stream);
+        let topic = Identifier::from(topic);
         let strategy = PollingStrategy::next();
 
         let poll_messages = self.inner.poll_messages(
-            &stream_id,
-            &topic_id,
+            &stream,
+            &topic,
             Some(partition_id),
             &consumer,
             &strategy,
