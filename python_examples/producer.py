@@ -22,17 +22,17 @@ async def main():
 
 def init_system(client: IggyClient):
     try:
-        logger.info(f"Creating stream with ID {STREAM_ID}...")
-        client.create_stream(stream_id=STREAM_ID, name="sample-stream")
+        logger.info(f"Creating stream with NAME {STREAM_NAME}...")
+        client.create_stream(name="sample-stream")
         logger.info("Stream was created successfuly.")
     except Exception as error:
         logger.error(f"Error creating stream: {error}")
         logger.exception(error)
-    
+
     try:
-        logger.info(f"Creating topic with ID {TOPIC_ID} in stream {STREAM_ID}")
+        logger.info(f"Creating topic {TOPIC_NAME} in stream {STREAM_NAME}")
         client.create_topic(
-            stream_id=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
+            stream=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
             partitions_count=1,
             name="sample-topic",
             replication_factor=1
@@ -45,7 +45,7 @@ def init_system(client: IggyClient):
 
 async def produce_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    logger.info(f"Messages will be sent to stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
+    logger.info(f"Messages will be sent to stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with interval {interval * 1000} ms.")
     current_id = 0
     messages_per_batch = 10
     while True:
@@ -58,8 +58,8 @@ async def produce_messages(client: IggyClient):
         logger.info(f"Attempting to send batch of {messages_per_batch} messages. Batch ID: {current_id // messages_per_batch}")
         try:
             client.send_messages(
-                stream_id=STREAM_NAME,
-                topic_id=TOPIC_NAME,
+                stream=STREAM_NAME,
+                topic=TOPIC_NAME,
                 partitioning=PARTITION_ID,
                 messages=messages,
             )
