@@ -25,7 +25,7 @@ async def main():
 
 async def consume_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    logger.info(f"Messages will be consumed from stream: {STREAM_ID}, topic: {TOPIC_ID}, partition: {PARTITION_ID} with "
+    logger.info(f"Messages will be consumed from stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with "
                 f"interval {interval * 1000} ms.")
     offset = 0
     messages_per_batch = 10
@@ -33,8 +33,8 @@ async def consume_messages(client: IggyClient):
         try:
             logger.debug("Polling for messages...")
             polled_messages = client.poll_messages(
-                stream_id=STREAM_NAME,
-                topic_id=TOPIC_NAME,
+                stream=STREAM_NAME,
+                topic=TOPIC_NAME,
                 partition_id=PARTITION_ID,
                 count=messages_per_batch,
                 auto_commit=False
