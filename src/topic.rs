@@ -8,7 +8,7 @@ pub struct TopicDetails {
 
 impl From<RustTopicDetails> for TopicDetails {
     fn from(topic_details: RustTopicDetails) -> Self {
-        TopicDetails {
+        Self {
             inner: topic_details,
         }
     }
@@ -36,4 +36,3 @@ impl TopicDetails {
         self.inner.partitions_count
     }
 }
-

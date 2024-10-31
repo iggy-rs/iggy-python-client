@@ -2,7 +2,7 @@ import asyncio
 from loguru import logger
 
 # Assuming there's a Python module for iggy with similar functionalities.
-from iggy_py import IggyClient, ReceiveMessage
+from iggy_py import IggyClient, ReceiveMessage, PollingStrategy
 
 STREAM_NAME = "sample-stream"
 TOPIC_NAME = "sample-topic"
@@ -36,6 +36,7 @@ async def consume_messages(client: IggyClient):
                 stream=STREAM_NAME,
                 topic=TOPIC_NAME,
                 partition_id=PARTITION_ID,
+                polling_strategy=PollingStrategy.Next(),
                 count=messages_per_batch,
                 auto_commit=True
             )

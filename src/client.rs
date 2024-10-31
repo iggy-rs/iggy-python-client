@@ -7,7 +7,7 @@ use iggy::clients::client::IggyClient as RustIggyClient;
 use iggy::compression::compression_algorithm::CompressionAlgorithm;
 use iggy::consumer::Consumer as RustConsumer;
 use iggy::identifier::Identifier;
-use iggy::messages::poll_messages::PollingStrategy;
+use iggy::messages::poll_messages::PollingStrategy as RustPollingStrategy;
 use iggy::messages::send_messages::{Message as RustMessage, Partitioning};
 use iggy::utils::expiry::IggyExpiry;
 use iggy::utils::topic_size::MaxTopicSize;
@@ -15,7 +15,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use tokio::runtime::{Builder, Runtime};
 
-use crate::receive_message::ReceiveMessage;
+use crate::receive_message::{PollingStrategy, ReceiveMessage};
 use crate::send_message::SendMessage;
 use crate::stream::StreamDetails;
 use crate::topic::TopicDetails;
@@ -164,7 +164,11 @@ impl IggyClient {
     /// Gets topic by stream and id.
     ///
     /// Returns Option of topic details or a PyRuntimeError on failure.
-    fn get_topic(&self, stream_id: PyIdentifier, topic_id: PyIdentifier) -> PyResult<Option<TopicDetails>> {
+    fn get_topic(
+        &self,
+        stream_id: PyIdentifier,
+        topic_id: PyIdentifier,
+    ) -> PyResult<Option<TopicDetails>> {
         let stream_id = Identifier::from(stream_id);
         let topic_id = Identifier::from(topic_id);
         let topic_future = self.inner.get_topic(&stream_id, &topic_id);
@@ -215,13 +219,14 @@ impl IggyClient {
         stream: PyIdentifier,
         topic: PyIdentifier,
         partition_id: u32,
+        polling_strategy: &PollingStrategy,
         count: u32,
         auto_commit: bool,
     ) -> PyResult<Vec<ReceiveMessage>> {
         let consumer = RustConsumer::default();
         let stream = Identifier::from(stream);
         let topic = Identifier::from(topic);
-        let strategy = PollingStrategy::next();
+        let strategy: RustPollingStrategy = (*polling_strategy).into();
 
         let poll_messages = self.inner.poll_messages(
             &stream,

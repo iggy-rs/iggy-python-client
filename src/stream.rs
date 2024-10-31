@@ -8,7 +8,7 @@ pub struct StreamDetails {
 
 impl From<RustStreamDetails> for StreamDetails {
     fn from(stream_details: RustStreamDetails) -> Self {
-        StreamDetails {
+        Self {
             inner: stream_details,
         }
     }
