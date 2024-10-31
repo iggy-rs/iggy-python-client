@@ -1159,9 +1159,9 @@ dependencies = [
 
 [[package]]
 name = "iggy"
-version = "0.6.30"
+version = "0.6.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a0e7699fa1ab227d26c2f0a6e107d51cac48fae13aff3715204856cd5deffc1"
+checksum = "9989abed402d020a4ad5f57ae4cb11d2ce73b8f1ded9475be0a8bbec4ffeaebd"
 dependencies = [
  "aes-gcm",
  "ahash 0.8.11",
@@ -1205,7 +1205,7 @@ dependencies = [
 
 [[package]]
 name = "iggy-py"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "bytes",
  "iggy",

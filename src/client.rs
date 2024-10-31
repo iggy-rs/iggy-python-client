@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use iggy::client::TopicClient;
 use iggy::client::{Client, MessageClient, StreamClient, UserClient};
-use iggy::clients::client::IggyClient as RustIggyClient;
 use iggy::clients::builder::IggyClientBuilder;
+use iggy::clients::client::IggyClient as RustIggyClient;
 use iggy::compression::compression_algorithm::CompressionAlgorithm;
 use iggy::consumer::Consumer as RustConsumer;
 use iggy::identifier::Identifier;
@@ -17,6 +17,8 @@ use tokio::runtime::{Builder, Runtime};
 
 use crate::receive_message::ReceiveMessage;
 use crate::send_message::SendMessage;
+use crate::stream::StreamDetails;
+use crate::topic::TopicDetails;
 
 /// A Python class representing the Iggy client.
 /// It wraps the RustIggyClient and provides asynchronous functionality
@@ -51,7 +53,7 @@ impl IggyClient {
     /// This initializes a new runtime for asynchronous operations.
     /// Future versions might utilize asyncio for more Pythonic async.
     #[new]
-	#[pyo3(signature = (conn=None))]
+    #[pyo3(signature = (conn=None))]
     fn new(conn: Option<String>) -> Self {
         // TODO: use asyncio
         let runtime = Builder::new_multi_thread()
@@ -59,11 +61,11 @@ impl IggyClient {
             .enable_all() // enables all available Tokio features
             .build()
             .unwrap();
-    let client = IggyClientBuilder::new()
-        .with_tcp()
-        .with_server_address(conn.unwrap_or("127.0.0.1:8090".to_string()))
-        .build()
-		.unwrap();
+        let client = IggyClientBuilder::new()
+            .with_tcp()
+            .with_server_address(conn.unwrap_or("127.0.0.1:8090".to_string()))
+            .build()
+            .unwrap();
         IggyClient {
             inner: client,
             runtime,
@@ -98,12 +100,25 @@ impl IggyClient {
     /// Returns Ok(()) on successful stream creation or a PyRuntimeError on failure.
     #[pyo3(signature = (name, stream_id = None))]
     fn create_stream(&self, name: String, stream_id: Option<u32>) -> PyResult<()> {
-		let create_stream_future = self.inner.create_stream(&name, stream_id);
+        let create_stream_future = self.inner.create_stream(&name, stream_id);
         let _create_stream = self
             .runtime
             .block_on(async move { create_stream_future.await })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         Ok(())
+    }
+
+    /// Gets stream by id.
+    ///
+    /// Returns Option of stream details or a PyRuntimeError on failure.
+    fn get_stream(&self, stream_id: PyIdentifier) -> PyResult<Option<StreamDetails>> {
+        let stream_id = Identifier::from(stream_id);
+        let stream_future = self.inner.get_stream(&stream_id);
+        let stream = self
+            .runtime
+            .block_on(async move { stream_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
+        Ok(stream.map(StreamDetails::from))
     }
 
     /// Creates a new topic with the given parameters.
@@ -114,21 +129,21 @@ impl IggyClient {
     )]
     fn create_topic(
         &self,
-		stream: PyIdentifier,
+        stream: PyIdentifier,
         name: String,
         partitions_count: u32,
         compression_algorithm: Option<String>,
         topic_id: Option<u32>,
         replication_factor: Option<u8>,
     ) -> PyResult<()> {
+        let compression_algorithm = match compression_algorithm {
+            Some(algo) => CompressionAlgorithm::from_str(&algo).map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?,
+            None => CompressionAlgorithm::default(),
+        };
 
-		let compression_algorithm = match compression_algorithm {
-			Some(algo) => CompressionAlgorithm::from_str(&algo)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?,
-			None => CompressionAlgorithm::default()
-		};
-
-		let stream = Identifier::from(stream);
+        let stream = Identifier::from(stream);
         let create_topic_future = self.inner.create_topic(
             &stream,
             &name,
@@ -144,6 +159,20 @@ impl IggyClient {
             .block_on(async move { create_topic_future.await })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
         PyResult::Ok(())
+    }
+
+    /// Gets topic by stream and id.
+    ///
+    /// Returns Option of topic details or a PyRuntimeError on failure.
+    fn get_topic(&self, stream_id: PyIdentifier, topic_id: PyIdentifier) -> PyResult<Option<TopicDetails>> {
+        let stream_id = Identifier::from(stream_id);
+        let topic_id = Identifier::from(topic_id);
+        let topic_future = self.inner.get_topic(&stream_id, &topic_id);
+        let topic = self
+            .runtime
+            .block_on(async move { topic_future.await })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
+        Ok(topic.map(TopicDetails::from))
     }
 
     /// Sends a list of messages to the specified topic.
@@ -167,7 +196,7 @@ impl IggyClient {
 
         let stream = Identifier::from(stream);
         let topic = Identifier::from(topic);
-		let partitioning = Partitioning::partition_id(partitioning);
+        let partitioning = Partitioning::partition_id(partitioning);
 
         let send_message_future =
             self.inner

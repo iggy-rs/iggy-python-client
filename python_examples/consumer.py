@@ -22,11 +22,11 @@ async def main():
         logger.exception("Exception occurred in main function: {}", error)
 
 
-
 async def consume_messages(client: IggyClient):
     interval = 0.5  # 500 milliseconds in seconds for asyncio.sleep
-    logger.info(f"Messages will be consumed from stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with "
-                f"interval {interval * 1000} ms.")
+    logger.info(
+        f"Messages will be consumed from stream: {STREAM_NAME}, topic: {TOPIC_NAME}, partition: {PARTITION_ID} with "
+        f"interval {interval * 1000} ms.")
     offset = 0
     messages_per_batch = 10
     while True:
@@ -37,7 +37,7 @@ async def consume_messages(client: IggyClient):
                 topic=TOPIC_NAME,
                 partition_id=PARTITION_ID,
                 count=messages_per_batch,
-                auto_commit=False
+                auto_commit=True
             )
             if not polled_messages:
                 logger.warning("No messages found in current poll")
@@ -56,7 +56,6 @@ async def consume_messages(client: IggyClient):
 def handle_message(message: ReceiveMessage):
     payload = message.payload().decode('utf-8')
     logger.info(f"Handling message at offset: {message.offset()} with payload: {payload}...")
-
 
 
 if __name__ == "__main__":
