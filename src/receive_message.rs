@@ -35,6 +35,27 @@ impl ReceiveMessage {
     pub fn offset(&self) -> u64 {
         self.inner.offset
     }
+
+    /// Retrieves the timestamp of the received message.
+    ///
+    /// The timestamp represents the time of the message within its topic.
+    pub fn timestamp(&self) -> u64 {
+        self.inner.timestamp
+    }
+
+    /// Retrieves the id of the received message.
+    ///
+    /// The id represents unique identifier of the message within its topic.
+    pub fn id(&self) -> u128 {
+        self.inner.id
+    }
+
+    /// Retrieves the checksum of the received message.
+    ///
+    /// The checksum represents the integrity of the message within its topic.
+    pub fn checksum(&self) -> u64 {
+        self.inner.checksum
+    }
 }
 
 #[derive(Clone, Copy)]
