@@ -1,5 +1,6 @@
 use iggy::messages::poll_messages::PollingStrategy as RustPollingStrategy;
 use iggy::models::messages::PolledMessage as RustReceiveMessage;
+use iggy::models::messages::MessageState as RustMessageState;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
@@ -53,8 +54,26 @@ impl ReceiveMessage {
     /// Retrieves the checksum of the received message.
     ///
     /// The checksum represents the integrity of the message within its topic.
-    pub fn checksum(&self) -> u64 {
+    pub fn checksum(&self) -> u32 {
         self.inner.checksum
+    }
+
+     /// Retrieves the Message's state of the received message.
+    ///
+    /// State represents the state of the response.
+    pub fn state(&self) -> String {
+        match self.inner.state {
+            RustMessageState::Available => "Available".to_string(),
+            RustMessageState::Unavailable => "Unavailable".to_string(),
+            RustMessageState::Poisoned => "Poisoned".to_string(),
+            RustMessageState::MarkedForDeletion => "Marked for Deletion".to_string()
+    }
+
+    /// Retrieves the length of the received message.
+    ///
+    /// The length represents the length of the payload.
+    pub fn length(&self) -> u32 {
+        self.inner.length
     }
 }
 
