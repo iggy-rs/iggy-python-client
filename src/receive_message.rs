@@ -67,6 +67,7 @@ impl ReceiveMessage {
             RustMessageState::Unavailable => "Unavailable".to_string(),
             RustMessageState::Poisoned => "Poisoned".to_string(),
             RustMessageState::MarkedForDeletion => "Marked for Deletion".to_string()
+        }
     }
 
     /// Retrieves the length of the received message.
