@@ -1,6 +1,6 @@
 use iggy::messages::poll_messages::PollingStrategy as RustPollingStrategy;
-use iggy::models::messages::PolledMessage as RustReceiveMessage;
 use iggy::models::messages::MessageState as RustMessageState;
+use iggy::models::messages::PolledMessage as RustReceiveMessage;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 
@@ -19,6 +19,15 @@ impl ReceiveMessage {
     pub(crate) fn from_rust_message(message: RustReceiveMessage) -> Self {
         Self { inner: message }
     }
+}
+
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq)]
+pub enum MessageState {
+    Available,
+    Unavailable,
+    Poisoned,
+    MarkedForDeletion,
 }
 
 #[pymethods]
@@ -58,15 +67,15 @@ impl ReceiveMessage {
         self.inner.checksum
     }
 
-     /// Retrieves the Message's state of the received message.
+    /// Retrieves the Message's state of the received message.
     ///
     /// State represents the state of the response.
-    pub fn state(&self) -> String {
+    pub fn state(&self) -> MessageState {
         match self.inner.state {
-            RustMessageState::Available => "Available".to_string(),
-            RustMessageState::Unavailable => "Unavailable".to_string(),
-            RustMessageState::Poisoned => "Poisoned".to_string(),
-            RustMessageState::MarkedForDeletion => "Marked for Deletion".to_string()
+            RustMessageState::Available => MessageState::Available,
+            RustMessageState::Unavailable => MessageState::Unavailable,
+            RustMessageState::Poisoned => MessageState::Poisoned,
+            RustMessageState::MarkedForDeletion => MessageState::MarkedForDeletion,
         }
     }
 
