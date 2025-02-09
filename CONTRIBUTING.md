@@ -35,24 +35,14 @@ pip install maturin
 Navigate to your library's root directory and execute:
 
 ```
+python -m venv .venv && source .venv/bin/activate
 maturin develop
 ```
 
 
 This will build the Rust library and make it available for Python.
 
-### 5. Start the Producer:
+### 5. Running the Examples:
 
-Navigate to the `python_examples` directory and run:
+Go to [python_examples/README.md](python_examples/README.md) for instructions on running the examples.
 
-```
-python producer.py
-```
-
-### 6. Start the Consumer:
-
-Still in the `python_examples` directory, run:
-
-```
-python consumer.py
-```

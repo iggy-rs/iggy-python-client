@@ -1,8 +1,9 @@
-# iggy
+# iggy_py
 
 [![discord-badge](https://img.shields.io/discord/1144142576266530928)](https://iggy.rs/discord)
 
-A Python package for [brief description of what iggy does, e.g., interacting with Apache Kafka].
+Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second.
+
 
 ## Installation
 
@@ -14,7 +15,7 @@ pip install iggy-py
 
 ### Supported Python Versions
 
-- Python 3.10+
+- Python 3.9+
 
 ## Usage and Examples:
 
@@ -26,9 +27,14 @@ docker run --rm -p 8080:8080 -p 3000:3000 -p 8090:8090 iggyrs/iggy:0.4.21
 
 Refer to the python_examples directory for examples on how to use the iggy library.
 
+## Running the Examples:
+
+Go to [python_examples/README.md](python_examples/README.md) for instructions on running the examples.
+
+
 ## API Reference
 
-For detailed documentation, visit [link to documentation]. The latest version is available at [latest doc link], and the stable version at [stable doc link].
+For detailed documentation, visit [Iggy's official Docs](https://docs.iggy.rs/).
 
 ## Contributing
 
@@ -38,7 +44,7 @@ Contributions are welcome! Please:
 2. Create an issue for any bugs or features you'd like to address.
 3. Submit pull requests following our code style guidelines.
 
-For more details, see [link to CONTRIBUTING.md].
+For more details, see the [Developer README](CONTRIBUTING.md).
 
 ## License
 
