@@ -82,8 +82,8 @@ impl ReceiveMessage {
     /// Retrieves the length of the received message.
     ///
     /// The length represents the length of the payload.
-    pub fn length(&self) -> u32 {
-        self.inner.length
+    pub fn length(&self) -> u64 {
+        self.inner.length.as_bytes_u64()
     }
 }
 
