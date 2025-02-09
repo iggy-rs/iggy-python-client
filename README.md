@@ -2,7 +2,7 @@
 
 [![discord-badge](https://img.shields.io/discord/1144142576266530928)](https://iggy.rs/discord)
 
-Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second.
+Apache Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second.
 
 
 ## Installation
@@ -34,7 +34,7 @@ Go to [python_examples/README.md](python_examples/README.md) for instructions on
 
 ## API Reference
 
-For detailed documentation, visit [Iggy's official Docs](https://docs.iggy.rs/).
+For detailed documentation, visit [Apache Iggy's official Docs](https://docs.iggy.rs/).
 
 ## Contributing
 
@@ -48,7 +48,7 @@ For more details, see the [Developer README](CONTRIBUTING.md).
 
 ## License
 
-iggy is distributed under the Apache 2.0 License. See [LICENSE](LICENSE) for terms and conditions.
+Apache iggy is distributed under the Apache 2.0 License. See [LICENSE](LICENSE) for terms and conditions.
 
 ## Contact Information
 

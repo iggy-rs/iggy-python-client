@@ -1,4 +1,4 @@
-# Contributing to Iggy
+# Contributing to Apache Iggy
 
 This repository provides a Python library powered by Rust using `pyo3`. It also utilizes Docker for server deployment.
 
