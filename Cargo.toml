@@ -15,6 +15,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.22.0"
-iggy = "0.6.31"
+iggy = "0.6.102"
 tokio = { version = "1", features = ["full"] }
 bytes = "1.7.1"
