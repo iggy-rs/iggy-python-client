@@ -1,10 +1,10 @@
 [package]
 name = "iggy-py"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2021"
 authors = ["Dario Lencina Talarico <darioalessandrolencina@gmail.com>"]
 license = "Apache-2.0"
-description = "Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second."
+description = "Apache Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second."
 documentation = "https://docs.iggy.rs"
 repository = "https://github.com/iggy-rs/iggy"
 

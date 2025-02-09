@@ -11,6 +11,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 version= "0.2.7"
+description= "Apache Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second."
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
