@@ -1,4 +1,5 @@
 use iggy::messages::poll_messages::PollingStrategy as RustPollingStrategy;
+use iggy::models::messages::MessageState as RustMessageState;
 use iggy::models::messages::PolledMessage as RustReceiveMessage;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
@@ -20,6 +21,15 @@ impl ReceiveMessage {
     }
 }
 
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq)]
+pub enum MessageState {
+    Available,
+    Unavailable,
+    Poisoned,
+    MarkedForDeletion,
+}
+
 #[pymethods]
 impl ReceiveMessage {
     /// Retrieves the payload of the received message.
@@ -34,6 +44,46 @@ impl ReceiveMessage {
     /// The offset represents the position of the message within its topic.
     pub fn offset(&self) -> u64 {
         self.inner.offset
+    }
+
+    /// Retrieves the timestamp of the received message.
+    ///
+    /// The timestamp represents the time of the message within its topic.
+    pub fn timestamp(&self) -> u64 {
+        self.inner.timestamp
+    }
+
+    /// Retrieves the id of the received message.
+    ///
+    /// The id represents unique identifier of the message within its topic.
+    pub fn id(&self) -> u128 {
+        self.inner.id
+    }
+
+    /// Retrieves the checksum of the received message.
+    ///
+    /// The checksum represents the integrity of the message within its topic.
+    pub fn checksum(&self) -> u32 {
+        self.inner.checksum
+    }
+
+    /// Retrieves the Message's state of the received message.
+    ///
+    /// State represents the state of the response.
+    pub fn state(&self) -> MessageState {
+        match self.inner.state {
+            RustMessageState::Available => MessageState::Available,
+            RustMessageState::Unavailable => MessageState::Unavailable,
+            RustMessageState::Poisoned => MessageState::Poisoned,
+            RustMessageState::MarkedForDeletion => MessageState::MarkedForDeletion,
+        }
+    }
+
+    /// Retrieves the length of the received message.
+    ///
+    /// The length represents the length of the payload.
+    pub fn length(&self) -> u64 {
+        self.inner.length.as_bytes_u64()
     }
 }
 

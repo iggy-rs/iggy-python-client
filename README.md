@@ -1,58 +1,55 @@
-# iggy-python-client
+# iggy_py
 
-This repository provides a Python library powered by Rust using `pyo3`. It also utilizes Docker for server deployment.
+[![discord-badge](https://img.shields.io/discord/1144142576266530928)](https://iggy.rs/discord)
 
-## Quick Start
+Apache Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second.
 
-### 1. Run the Server with Docker:
 
-Ensure you have Docker installed on your system. Then, execute the following command:
+## Installation
+
+To install `iggy`, use pip:
+
+```bash
+pip install iggy-py
+```
+
+### Supported Python Versions
+
+- Python 3.7+
+
+## Usage and Examples:
+
+All examples rely on a running iggy server. To start the server, execute:
 
 ```
 docker run --rm -p 8080:8080 -p 3000:3000 -p 8090:8090 iggyrs/iggy:0.4.21
 ```
 
+Refer to the python_examples directory for examples on how to use the iggy library.
 
-This command runs the server and maps the specified ports to your local machine.
+## Running the Examples:
 
-### 2. Install loguru:
-Loguru is advanced library used for logging information about procceses. Install it with:
-
-```
-pip install loguru
-```
-
-### 3. Install Maturin:
-
-Maturin is used for building Rust binaries for Python. Install it with:
-
-```
-pip install maturin
-```
-
-### 4. Build and Install the pyo3 Library:
-
-Navigate to your library's root directory and execute:
-
-```
-maturin develop
-```
+Go to [python_examples/README.md](python_examples/README.md) for instructions on running the examples.
 
 
-This will build the Rust library and make it available for Python.
+## API Reference
 
-### 5. Start the Producer:
+For detailed documentation, visit [Apache Iggy's official Docs](https://docs.iggy.rs/).
 
-Navigate to the `python_examples` directory and run:
+## Contributing
 
-```
-python producer.py
-```
+Contributions are welcome! Please:
 
-### 6. Start the Consumer:
+1. Fork the repository on GitHub.
+2. Create an issue for any bugs or features you'd like to address.
+3. Submit pull requests following our code style guidelines.
 
-Still in the `python_examples` directory, run:
+For more details, see the [Developer README](CONTRIBUTING.md).
 
-```
-python consumer.py
-```
+## License
+
+Apache iggy is distributed under the Apache 2.0 License. See [LICENSE](LICENSE) for terms and conditions.
+
+## Contact Information
+
+For questions, suggestions, or issues, contact the developers at [your email address] or raise an issue on GitHub.

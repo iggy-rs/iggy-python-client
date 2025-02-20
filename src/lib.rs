@@ -6,7 +6,7 @@ mod topic;
 
 use client::IggyClient;
 use pyo3::prelude::*;
-use receive_message::{PollingStrategy, ReceiveMessage};
+use receive_message::{MessageState, PollingStrategy, ReceiveMessage};
 use send_message::SendMessage;
 use stream::StreamDetails;
 use topic::TopicDetails;
@@ -20,5 +20,6 @@ fn iggy_py(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<StreamDetails>()?;
     m.add_class::<TopicDetails>()?;
     m.add_class::<PollingStrategy>()?;
+    m.add_class::<MessageState>()?;
     Ok(())
 }
