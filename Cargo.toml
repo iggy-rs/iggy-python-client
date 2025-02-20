@@ -10,8 +10,9 @@ name = "iggy_py"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.22.0"
-iggy = "0.6.31"
-tokio = { version = "1", features = ["full"] }
-bytes = "1.7.1"
+pyo3 = "0.23.0"
+iggy = "0.6.201"
+tokio = { version = "1.43.0", features = ["full"] }
+bytes = "1.10.0"
 openssl = { version = "0.10.*", features = ["vendored"] }
+pyo3-async-runtimes = { version = "0.23.0", features = ["attributes", "tokio-runtime"] }

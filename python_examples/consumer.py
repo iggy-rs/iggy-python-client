@@ -13,9 +13,9 @@ async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
     try:
         logger.info("Connecting to IggyClient...")
-        client.connect()
+        await client.connect()
         logger.info("Connected. Logging in user...")
-        client.login_user("iggy", "iggy")
+        await client.login_user("iggy", "iggy")
         logger.info("Logged in.")
         await consume_messages(client)
     except Exception as error:
@@ -32,7 +32,7 @@ async def consume_messages(client: IggyClient):
     while True:
         try:
             logger.debug("Polling for messages...")
-            polled_messages = client.poll_messages(
+            polled_messages = await client.poll_messages(
                 stream=STREAM_NAME,
                 topic=TOPIC_NAME,
                 partition_id=PARTITION_ID,
