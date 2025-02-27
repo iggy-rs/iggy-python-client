@@ -5,12 +5,12 @@ build-backend = "maturin"
 [project]
 name = "iggy_py"
 requires-python = ">=3.7"
+version = "0.3.0"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-version= "0.2.7"
 description= "Apache Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second."
 
 [tool.maturin]

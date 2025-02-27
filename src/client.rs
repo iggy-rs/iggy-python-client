@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 
 use iggy::client::TopicClient;
 use iggy::client::{Client, MessageClient, StreamClient, UserClient};
@@ -13,7 +14,7 @@ use iggy::utils::expiry::IggyExpiry;
 use iggy::utils::topic_size::MaxTopicSize;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use tokio::runtime::{Builder, Runtime};
+use pyo3_async_runtimes::tokio::future_into_py;
 
 use crate::receive_message::{PollingStrategy, ReceiveMessage};
 use crate::send_message::SendMessage;
@@ -25,8 +26,7 @@ use crate::topic::TopicDetails;
 /// through the contained runtime.
 #[pyclass]
 pub struct IggyClient {
-    inner: RustIggyClient,
-    runtime: Runtime,
+    inner: Arc<RustIggyClient>,
 }
 
 #[derive(FromPyObject)]
@@ -55,70 +55,83 @@ impl IggyClient {
     #[new]
     #[pyo3(signature = (conn=None))]
     fn new(conn: Option<String>) -> Self {
-        // TODO: use asyncio
-        let runtime = Builder::new_multi_thread()
-            .worker_threads(4) // number of worker threads
-            .enable_all() // enables all available Tokio features
-            .build()
-            .unwrap();
         let client = IggyClientBuilder::new()
             .with_tcp()
             .with_server_address(conn.unwrap_or("127.0.0.1:8090".to_string()))
             .build()
             .unwrap();
         IggyClient {
-            inner: client,
-            runtime,
+            inner: Arc::new(client),
         }
     }
 
     /// Logs in the user with the given credentials.
     ///
     /// Returns `Ok(())` on success, or a PyRuntimeError on failure.
-    fn login_user(&self, username: String, password: String) -> PyResult<()> {
-        let login_future = self.inner.login_user(&username, &password);
-        self.runtime
-            .block_on(async move { login_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        Ok(())
+    fn login_user<'a>(
+        &self,
+        py: Python<'a>,
+        username: String,
+        password: String,
+    ) -> PyResult<Bound<'a, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner.login_user(&username, &password).await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
+            Ok(())
+        })
     }
 
     /// Connects the IggyClient to its service.
     ///
     /// Returns Ok(()) on successful connection or a PyRuntimeError on failure.
-    fn connect(&mut self) -> PyResult<()> {
-        let connect_future = self.inner.connect();
-        let _connect = self
-            .runtime
-            .block_on(async move { connect_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        Ok(())
+    fn connect<'a>(&self, py: Python<'a>) -> PyResult<Bound<'a, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner.connect().await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
+            Ok(())
+        })
     }
 
     /// Creates a new stream with the provided ID and name.
     ///
     /// Returns Ok(()) on successful stream creation or a PyRuntimeError on failure.
     #[pyo3(signature = (name, stream_id = None))]
-    fn create_stream(&self, name: String, stream_id: Option<u32>) -> PyResult<()> {
-        let create_stream_future = self.inner.create_stream(&name, stream_id);
-        let _create_stream = self
-            .runtime
-            .block_on(async move { create_stream_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        Ok(())
+    fn create_stream<'a>(
+        &self,
+        py: Python<'a>,
+        name: String,
+        stream_id: Option<u32>,
+    ) -> PyResult<Bound<'a, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner.create_stream(&name, stream_id).await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
+            Ok(())
+        })
     }
 
     /// Gets stream by id.
     ///
     /// Returns Option of stream details or a PyRuntimeError on failure.
-    fn get_stream(&self, stream_id: PyIdentifier) -> PyResult<Option<StreamDetails>> {
+    fn get_stream<'a>(
+        &self,
+        py: Python<'a>,
+        stream_id: PyIdentifier,
+    ) -> PyResult<Bound<'a, PyAny>> {
         let stream_id = Identifier::from(stream_id);
-        let stream_future = self.inner.get_stream(&stream_id);
-        let stream = self
-            .runtime
-            .block_on(async move { stream_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        Ok(stream.map(StreamDetails::from))
+        let inner = self.inner.clone();
+
+        future_into_py(py, async move {
+            let stream = inner.get_stream(&stream_id).await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
+            Ok(stream.map(StreamDetails::from))
+        })
     }
 
     /// Creates a new topic with the given parameters.
@@ -127,15 +140,17 @@ impl IggyClient {
     #[pyo3(
         signature = (stream, name, partitions_count, compression_algorithm = None, topic_id = None, replication_factor = None)
     )]
-    fn create_topic(
+    #[allow(clippy::too_many_arguments)]
+    fn create_topic<'a>(
         &self,
+        py: Python<'a>,
         stream: PyIdentifier,
         name: String,
         partitions_count: u32,
         compression_algorithm: Option<String>,
         topic_id: Option<u32>,
         replication_factor: Option<u8>,
-    ) -> PyResult<()> {
+    ) -> PyResult<Bound<'a, PyAny>> {
         let compression_algorithm = match compression_algorithm {
             Some(algo) => CompressionAlgorithm::from_str(&algo).map_err(|e| {
                 PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
@@ -144,51 +159,60 @@ impl IggyClient {
         };
 
         let stream = Identifier::from(stream);
-        let create_topic_future = self.inner.create_topic(
-            &stream,
-            &name,
-            partitions_count,
-            compression_algorithm,
-            replication_factor,
-            topic_id,
-            IggyExpiry::NeverExpire,
-            MaxTopicSize::ServerDefault,
-        );
-        let _create_topic = self
-            .runtime
-            .block_on(async move { create_topic_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        PyResult::Ok(())
+        let inner = self.inner.clone();
+
+        future_into_py(py, async move {
+            inner
+                .create_topic(
+                    &stream,
+                    &name,
+                    partitions_count,
+                    compression_algorithm,
+                    replication_factor,
+                    topic_id,
+                    IggyExpiry::NeverExpire,
+                    MaxTopicSize::ServerDefault,
+                )
+                .await
+                .map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+                })?;
+            Ok(())
+        })
     }
 
     /// Gets topic by stream and id.
     ///
     /// Returns Option of topic details or a PyRuntimeError on failure.
-    fn get_topic(
+    fn get_topic<'a>(
         &self,
+        py: Python<'a>,
         stream_id: PyIdentifier,
         topic_id: PyIdentifier,
-    ) -> PyResult<Option<TopicDetails>> {
+    ) -> PyResult<Bound<'a, PyAny>> {
         let stream_id = Identifier::from(stream_id);
         let topic_id = Identifier::from(topic_id);
-        let topic_future = self.inner.get_topic(&stream_id, &topic_id);
-        let topic = self
-            .runtime
-            .block_on(async move { topic_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        Ok(topic.map(TopicDetails::from))
+        let inner = self.inner.clone();
+
+        future_into_py(py, async move {
+            let topic = inner.get_topic(&stream_id, &topic_id).await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
+            Ok(topic.map(TopicDetails::from))
+        })
     }
 
     /// Sends a list of messages to the specified topic.
     ///
     /// Returns Ok(()) on successful sending or a PyRuntimeError on failure.
-    fn send_messages(
+    fn send_messages<'a>(
         &self,
+        py: Python<'a>,
         stream: PyIdentifier,
         topic: PyIdentifier,
         partitioning: u32,
         messages: &Bound<'_, PyList>,
-    ) -> PyResult<()> {
+    ) -> PyResult<Bound<'a, PyAny>> {
         let messages: Vec<SendMessage> = messages
             .iter()
             .map(|item| item.extract::<SendMessage>())
@@ -201,53 +225,61 @@ impl IggyClient {
         let stream = Identifier::from(stream);
         let topic = Identifier::from(topic);
         let partitioning = Partitioning::partition_id(partitioning);
+        let inner = self.inner.clone();
 
-        let send_message_future =
-            self.inner
-                .send_messages(&stream, &topic, &partitioning, messages.as_mut());
-        self.runtime
-            .block_on(async move { send_message_future.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-        Ok(())
+        future_into_py(py, async move {
+            inner
+                .send_messages(&stream, &topic, &partitioning, messages.as_mut())
+                .await
+                .map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+                })?;
+            Ok(())
+        })
     }
 
     /// Polls for messages from the specified topic and partition.
     ///
     /// Returns a list of received messages or a PyRuntimeError on failure.
-    fn poll_messages(
+    #[allow(clippy::too_many_arguments)]
+    fn poll_messages<'a>(
         &self,
+        py: Python<'a>,
         stream: PyIdentifier,
         topic: PyIdentifier,
         partition_id: u32,
         polling_strategy: &PollingStrategy,
         count: u32,
         auto_commit: bool,
-    ) -> PyResult<Vec<ReceiveMessage>> {
+    ) -> PyResult<Bound<'a, PyAny>> {
         let consumer = RustConsumer::default();
         let stream = Identifier::from(stream);
         let topic = Identifier::from(topic);
         let strategy: RustPollingStrategy = (*polling_strategy).into();
 
-        let poll_messages = self.inner.poll_messages(
-            &stream,
-            &topic,
-            Some(partition_id),
-            &consumer,
-            &strategy,
-            count,
-            auto_commit,
-        );
+        let inner = self.inner.clone();
 
-        let polled_messages = self
-            .runtime
-            .block_on(async move { poll_messages.await })
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
-
-        let messages = polled_messages
-            .messages
-            .into_iter()
-            .map(|message| ReceiveMessage::from_rust_message(message))
-            .collect::<Vec<_>>();
-        PyResult::Ok(messages)
+        future_into_py(py, async move {
+            let polled_messages = inner
+                .poll_messages(
+                    &stream,
+                    &topic,
+                    Some(partition_id),
+                    &consumer,
+                    &strategy,
+                    count,
+                    auto_commit,
+                )
+                .await
+                .map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+                })?;
+            let messages = polled_messages
+                .messages
+                .into_iter()
+                .map(ReceiveMessage::from_rust_message)
+                .collect::<Vec<_>>();
+            Ok(messages)
+        })
     }
 }

@@ -12,20 +12,20 @@ PARTITION_ID = 1
 async def main():
     client = IggyClient()  # Assuming default constructor has similar functionality.
     logger.info("Connecting to IggyClient")
-    client.connect()
+    await client.connect()
     logger.info("Connected. Logging in user...")
-    client.login_user("iggy", "iggy")
+    await client.login_user("iggy", "iggy")
     logger.info("Logged in.")
-    init_system(client)
+    await init_system(client)
     await produce_messages(client)
 
 
-def init_system(client: IggyClient):
+async def init_system(client: IggyClient):
     try:
         logger.info(f"Creating stream with name {STREAM_NAME}...")
-        stream: StreamDetails = client.get_stream(STREAM_NAME)
+        stream: StreamDetails = await client.get_stream(STREAM_NAME)
         if stream is None:
-            client.create_stream(name=STREAM_NAME)
+            await client.create_stream(name=STREAM_NAME)
             logger.info("Stream was created successfully.")
         else:
             logger.info(f"Stream {stream.name} already exists with ID {stream.id}")
@@ -36,9 +36,9 @@ def init_system(client: IggyClient):
 
     try:
         logger.info(f"Creating topic {TOPIC_NAME} in stream {STREAM_NAME}")
-        topic: TopicDetails = client.get_topic(STREAM_NAME, TOPIC_NAME)
+        topic: TopicDetails = await client.get_topic(STREAM_NAME, TOPIC_NAME)
         if topic is None:
-            client.create_topic(
+            await client.create_topic(
                 stream=STREAM_NAME,  # Assuming a method exists to create a numeric Identifier.
                 partitions_count=1,
                 name=TOPIC_NAME,
@@ -68,7 +68,7 @@ async def produce_messages(client: IggyClient):
         logger.info(
             f"Attempting to send batch of {messages_per_batch} messages. Batch ID: {current_id // messages_per_batch}")
         try:
-            client.send_messages(
+            await client.send_messages(
                 stream=STREAM_NAME,
                 topic=TOPIC_NAME,
                 partitioning=PARTITION_ID,

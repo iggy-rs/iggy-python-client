@@ -36,7 +36,7 @@ impl ReceiveMessage {
     ///
     /// The payload is returned as a Python bytes object.
     pub fn payload(&self, py: Python) -> PyObject {
-        PyBytes::new_bound(py, &self.inner.payload.to_vec()).into()
+        PyBytes::new(py, &self.inner.payload).into()
     }
 
     /// Retrieves the offset of the received message.
