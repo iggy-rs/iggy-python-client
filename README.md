@@ -25,6 +25,13 @@ All examples rely on a running iggy server. To start the server, execute:
 docker run --rm -p 8080:8080 -p 3000:3000 -p 8090:8090 iggyrs/iggy:0.4.21
 ```
 
+## Generating Stub Files
+To generate a stub file, execute the following command:
+
+```
+cargo run --bin stub_gen
+```
+
 Refer to the python_examples directory for examples on how to use the iggy library.
 
 ## Running the Examples:

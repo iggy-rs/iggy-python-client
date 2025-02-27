@@ -3,11 +3,13 @@ use iggy::models::messages::MessageState as RustMessageState;
 use iggy::models::messages::PolledMessage as RustReceiveMessage;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
 
 /// A Python class representing a received message.
 ///
 /// This class wraps a Rust message, allowing for access to its payload and offset from Python.
 #[pyclass]
+#[gen_stub_pyclass]
 pub struct ReceiveMessage {
     pub(crate) inner: RustReceiveMessage,
 }
@@ -21,6 +23,7 @@ impl ReceiveMessage {
     }
 }
 
+#[gen_stub_pyclass_enum]
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq)]
 pub enum MessageState {
@@ -30,13 +33,14 @@ pub enum MessageState {
     MarkedForDeletion,
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl ReceiveMessage {
     /// Retrieves the payload of the received message.
     ///
     /// The payload is returned as a Python bytes object.
     pub fn payload(&self, py: Python) -> PyObject {
-        PyBytes::new(py, &self.inner.payload).into()
+        PyBytes::new_bound(py, &self.inner.payload).into()
     }
 
     /// Retrieves the offset of the received message.
@@ -88,6 +92,7 @@ impl ReceiveMessage {
 }
 
 #[derive(Clone, Copy)]
+#[gen_stub_pyclass_enum]
 #[pyclass]
 pub enum PollingStrategy {
     Offset { value: u64 },
