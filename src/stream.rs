@@ -1,7 +1,9 @@
 use iggy::models::stream::StreamDetails as RustStreamDetails;
 use pyo3::prelude::*;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 #[pyclass]
+#[gen_stub_pyclass]
 pub struct StreamDetails {
     pub(crate) inner: RustStreamDetails,
 }
@@ -14,6 +16,7 @@ impl From<RustStreamDetails> for StreamDetails {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl StreamDetails {
     #[getter]

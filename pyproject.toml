@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "iggy_py"
 requires-python = ">=3.7"
-version = "0.3.0"
+version = "0.4.0"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -15,3 +15,14 @@ description= "Apache Iggy is the persistent message streaming platform written i
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-asyncio",
+    "testcontainers[docker]",
+    "maturin"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -1,6 +1,8 @@
 use iggy::models::topic::TopicDetails as RustTopicDetails;
 use pyo3::prelude::*;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
+#[gen_stub_pyclass]
 #[pyclass]
 pub struct TopicDetails {
     pub(crate) inner: RustTopicDetails,
@@ -14,6 +16,7 @@ impl From<RustTopicDetails> for TopicDetails {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl TopicDetails {
     #[getter]

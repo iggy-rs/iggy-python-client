@@ -1,4 +1,4 @@
-mod client;
+pub mod client;
 mod receive_message;
 mod send_message;
 mod stream;

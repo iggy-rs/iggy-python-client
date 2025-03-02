@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use iggy::client::TopicClient;
+use iggy::client::{SystemClient, TopicClient};
 use iggy::client::{Client, MessageClient, StreamClient, UserClient};
 use iggy::clients::builder::IggyClientBuilder;
 use iggy::clients::client::IggyClient as RustIggyClient;
@@ -15,6 +15,8 @@ use iggy::utils::topic_size::MaxTopicSize;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use pyo3_async_runtimes::tokio::future_into_py;
+use pyo3_stub_gen::define_stub_info_gatherer;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
 
 use crate::receive_message::{PollingStrategy, ReceiveMessage};
 use crate::send_message::SendMessage;
@@ -24,11 +26,13 @@ use crate::topic::TopicDetails;
 /// A Python class representing the Iggy client.
 /// It wraps the RustIggyClient and provides asynchronous functionality
 /// through the contained runtime.
+#[gen_stub_pyclass]
 #[pyclass]
 pub struct IggyClient {
     inner: Arc<RustIggyClient>,
 }
 
+#[gen_stub_pyclass_enum]
 #[derive(FromPyObject)]
 enum PyIdentifier {
     #[pyo3(transparent, annotation = "str")]
@@ -47,6 +51,7 @@ impl From<PyIdentifier> for Identifier {
 }
 
 #[pymethods]
+#[gen_stub_pymethods]
 impl IggyClient {
     /// Constructs a new IggyClient.
     ///
@@ -63,6 +68,20 @@ impl IggyClient {
         IggyClient {
             inner: Arc::new(client),
         }
+    }
+
+    /// Sends a ping request to the server to check connectivity.
+    ///
+    /// Returns `Ok(())` if the server responds successfully, or a `PyRuntimeError`
+    /// if the connection fails.
+    fn ping<'a>(&self, py: Python<'a>) -> PyResult<Bound<'a, PyAny>> {
+        let inner = self.inner.clone();
+        future_into_py(py, async move {
+            inner.ping().await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+            })?;
+            Ok(())
+        })
     }
 
     /// Logs in the user with the given credentials.
@@ -283,3 +302,5 @@ impl IggyClient {
         })
     }
 }
+
+define_stub_info_gatherer!(stub_info);

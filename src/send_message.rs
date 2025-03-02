@@ -1,5 +1,6 @@
 use iggy::messages::send_messages::Message as RustSendMessage;
 use pyo3::prelude::*;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use std::str::FromStr;
 
 /// A Python class representing a message to be sent.
@@ -7,6 +8,7 @@ use std::str::FromStr;
 /// This class wraps a Rust message meant for sending, facilitating
 /// the creation of such messages from Python and their subsequent use in Rust.
 #[pyclass]
+#[gen_stub_pyclass]
 pub struct SendMessage {
     pub(crate) inner: RustSendMessage,
 }
@@ -23,6 +25,7 @@ impl Clone for SendMessage {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl SendMessage {
     /// Constructs a new `SendMessage` instance from a string.
