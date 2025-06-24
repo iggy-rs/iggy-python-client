@@ -1,4 +1,6 @@
-# iggy_py
+# The source code has been moved to [Apache Iggy](https://github.com/apache/iggy/)
+
+## Apache Iggy Python SDK
 
 [![discord-badge](https://img.shields.io/discord/1144142576266530928)](https://iggy.rs/discord)
 
